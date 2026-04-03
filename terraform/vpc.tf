@@ -43,9 +43,9 @@ resource "aws_vpc" "main" {
 resource "aws_subnet" "subnets" {
   for_each = local.subnet_map
 
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = each.value.cidr_block
-  availability_zone       = each.value.availability_zone
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = each.value.cidr_block
+  availability_zone = each.value.availability_zone
 
   tags = {
     Name = each.value.name
