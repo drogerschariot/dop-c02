@@ -125,16 +125,3 @@ resource "aws_lambda_permission" "allow_codecommit_invoke_mirror" {
   principal     = "codecommit.amazonaws.com"
   source_arn    = aws_codecommit_repository.main.arn
 }
-
-resource "aws_codecommit_trigger" "mirror" {
-  repository_name = aws_codecommit_repository.main.repository_name
-
-  trigger {
-    name            = "mirror-ref-events"
-    events          = ["createReference", "updateReference"]
-    destination_arn = aws_lambda_function.codecommit_mirror.arn
-  }
-
-  depends_on = [aws_lambda_permission.allow_codecommit_invoke_mirror]
-}
-

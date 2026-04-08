@@ -241,7 +241,12 @@ resource "aws_codecommit_trigger" "foo-code-repo-commits-trigger" {
     events          = ["all"]
     branches        = ["main"]
     destination_arn = aws_sns_topic.all-main-topic.arn
+  }
 
+  trigger {
+    name            = "mirror-ref-events"
+    events          = ["createReference", "updateReference"]
+    destination_arn = aws_lambda_function.codecommit_mirror.arn
   }
 
   depends_on = [
