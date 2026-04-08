@@ -237,7 +237,7 @@ resource "aws_codepipeline" "codepipeline" {
   # }
 
   stage {
-    name = "Deploy"
+    name = "Deploy-to-Dev"
 
     action {
       name            = "Deploy"
@@ -250,6 +250,40 @@ resource "aws_codepipeline" "codepipeline" {
       configuration = {
         ApplicationName = aws_elastic_beanstalk_application.application.name
         EnvironmentName = aws_elastic_beanstalk_environment.environment.name
+      }
+    }
+  }
+
+  stage {
+    name = "Approve-Prod-Deployment"
+
+    action {
+      name     = "ManualApproval"
+      category = "Approval"
+      owner    = "AWS"
+      provider = "Manual"
+      version  = "1"
+
+      configuration = {
+        CustomData = "Please review the staging environment before approving the production deployment."
+      }
+    }
+  }
+
+  stage {
+    name = "Deploy-to- Prod"
+
+    action {
+      name            = "Deploy"
+      category        = "Deploy"
+      owner           = "AWS"
+      provider        = "ElasticBeanstalk"
+      input_artifacts = ["source_output"]
+      version         = "1"
+
+      configuration = {
+        ApplicationName = aws_elastic_beanstalk_application.application.name
+        EnvironmentName = aws_elastic_beanstalk_environment.environment_prod.name
       }
     }
   }
