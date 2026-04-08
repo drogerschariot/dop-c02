@@ -41,3 +41,4 @@ override.tf.json
 terraform.rc
 
 dev_rsa*
+.build
