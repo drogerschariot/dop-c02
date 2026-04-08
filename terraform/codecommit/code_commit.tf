@@ -20,6 +20,32 @@ resource "aws_codecommit_repository" "replica" {
   }
 }
 
+data "aws_iam_user" "drogers" {
+  user_name = "drogers"
+}
+
+resource "aws_codecommit_approval_rule_template" "main_pr_requires_drogers" {
+  name        = "${local.name}-main-pr-requires-drogers"
+  description = "Require approval from drogers for pull requests targeting main."
+
+  content = jsonencode({
+    Version               = "2018-11-08"
+    DestinationReferences = ["refs/heads/main"]
+    Statements = [
+      {
+        Type                    = "Approvers"
+        NumberOfApprovalsNeeded = 1
+        ApprovalPoolMembers     = [data.aws_iam_user.drogers.arn]
+      }
+    ]
+  })
+}
+
+resource "aws_codecommit_approval_rule_template_association" "main_repo_main_pr_requires_drogers" {
+  approval_rule_template_name = aws_codecommit_approval_rule_template.main_pr_requires_drogers.name
+  repository_name             = aws_codecommit_repository.main.repository_name
+}
+
 resource "aws_iam_user" "foo" {
   name = "code-commit-user-foo"
   tags = {
@@ -46,11 +72,17 @@ resource "aws_iam_user_policy" "foo" {
           "codecommit:BatchDescribe*",
           "codecommit:Get*",
           "codecommit:Describe*",
-          "codecommit:List*",
           "codecommit:GitPull",
           "codecommit:GitPush"
         ]
         Resource = aws_codecommit_repository.main.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "codecommit:List*",
+        ]
+        Resource = ["*"]
       }
     ]
   })
@@ -113,8 +145,8 @@ resource "aws_iam_user_policy" "dev" {
 }
 
 resource "aws_iam_user_policy" "dev_allow" {
-  user   = aws_iam_user.dev.name
-  name   = "code-commit-policy-dev-allow"
+  user = aws_iam_user.dev.name
+  name = "code-commit-policy-dev-allow"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -127,9 +159,17 @@ resource "aws_iam_user_policy" "dev_allow" {
           "codecommit:Describe*",
           "codecommit:List*",
           "codecommit:GitPull",
-          "codecommit:GitPush"
+          "codecommit:GitPush",
+          "codecommit:CreatePullRequest"
         ]
         Resource = aws_codecommit_repository.main.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "codecommit:List*",
+        ]
+        Resource = ["*"]
       }
     ]
   })
