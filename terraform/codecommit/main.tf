@@ -1,6 +1,6 @@
 locals {
-  region = "us-east-2"
-  name = "codecommit"
+  region        = "us-east-2"
+  name          = "codecommit"
   friendly_name = "codecommit"
 }
 
