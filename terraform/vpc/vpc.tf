@@ -1,5 +1,8 @@
 locals {
+  name     = "dop-c02"
   vpc_cidr = "10.0.0.0/16"
+
+  # Local list of subnets compatible with aws_subnet.subnets (cidr_block, availability_zone, is_public).
   subnets = [
     {
       name              = "public-a"
@@ -24,12 +27,10 @@ locals {
       cidr_block        = "10.0.12.0/24"
       availability_zone = "${local.region}b"
       is_public         = false
-    }
+    },
   ]
 
-  subnet_map = {
-    for subnet in local.subnets : subnet.name => subnet
-  }
+  subnet_map = { for subnet in local.subnets : subnet.name => subnet }
 }
 
 resource "aws_vpc" "main" {

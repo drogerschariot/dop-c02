@@ -1,3 +1,9 @@
+locals {
+  region = "us-east-2"
+  name = "codecommit"
+  friendly_name = "codecommit"
+}
+
 terraform {
   required_providers {
     aws = {
