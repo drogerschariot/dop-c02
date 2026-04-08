@@ -53,3 +53,34 @@ resource "aws_subnet" "subnets" {
     Type = each.value.is_public ? "public" : "private"
   }
 }
+
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = local.name
+  }
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
+  tags = {
+    Name = "${local.name}-public"
+  }
+}
+
+resource "aws_route_table_association" "public" {
+  for_each = {
+    for name, subnet in local.subnet_map : name => subnet
+    if subnet.is_public
+  }
+
+  subnet_id      = aws_subnet.subnets[each.key].id
+  route_table_id = aws_route_table.public.id
+}
